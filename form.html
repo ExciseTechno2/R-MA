@@ -249,6 +249,19 @@
                     .then((response) => response.json())
                     .then((result) => {
                         if (result.res) {
+                            liff.sendMessages([
+                                {
+                                    type: "text",
+                                    text: "เลขที่แจ้งซ่อม: " + result.id + "\nเรื่อง: " + request,
+                                },
+                            ])
+                                .then(() => {
+                                    console.log("message sent");
+                                })
+                                .catch((err) => {
+                                    console.log("error", err);
+                                });
+                            
                             Swal.fire({
                                 title: "Success",
                                 text: "ดำเนินการเสร็จสิ้น ส่วนเทคโนโลยีสารสนเทศจะรีบดำเนินการแก้ไขให้ครับ",
