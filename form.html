@@ -3,48 +3,374 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R-MA</title>
+
+    <!-- bootstrap -->
+    <link href="./vender/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="./vender/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Sweetalert -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.all.min.js"></script>
+
     <style>
         html,
         body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
+            background-image: linear-gradient(rgb(0, 132, 255), rgb(126, 161, 201), rgb(174, 174, 175));
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
+        .blink-text {
+            animation: blinker 1s linear infinite;
+            /* ปรับความเร็ว 1s (1 วินาที), linear (ความเร็วคงที่), infinite (กระพริบไม่รู้จบ) */
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+                /* ช่วงกลางของเวลา ข้อความจะหายไป (0%) */
+            }
         }
     </style>
+
 </head>
 
 <body>
-    <iframe id="formframe" src="" frameborder="0"></iframe>
-</body>
-<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>
-<script>
-    
-    function runApp() {
-        liff.getProfile().then(profile => {
-            let userId = profile.userId;
-            let displayName = profile.displayName;
-            let pictureUrl = profile.pictureUrl;
-            let url = "https://script.google.com/macros/s/AKfycbwofCV9Y7xU6nsmIOr2cxHejm4kHdpqH9Ne5tQUhMzaClPzimQDnseXZ5158ZDeBzTufA/exec?userId=" + userId + "&displayName=" + displayName + "&pictureUrl=" + pictureUrl;
-            document.getElementById("formframe").src = url;
-        }).catch(err => console.error(err));
-    }
+    <div class="container-fluid">
+        <!-- userId	displayName	pictureUrl	userName	request	position	office	department1	department2	commodity	contactNumber	place	anydeskId -->
+        <div class="card my-2">
+            <div class="card-body g-3 bg-light">
+                <div class="mb-3">
+                    <label for="userName" class="form-label">ชื่อผู้แจ้ง</label>
+                    <input type="text" class="form-control" id="userName" placeholder="ชื่อผู้แจ้ง..." value="" />
+                </div>
 
-    liff.init({ liffId: "1660727236-AbmnnyqB" }, () => {
-        if (liff.isLoggedIn()) {
-            runApp();
-        } else {
-            liff.login();
+                <div class="mb-3">
+                    <label for="position" class="form-label">ตำแหน่ง</label>
+                    <select class="form-select" id="position">
+                        <option value="" selected disabled hidden> --เลือกตำแหน่ง-- </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="office" class="form-label">หน่วยงาน</label>
+                    <select class="form-select" id="office" onchange="checkOffice(this.value)">
+                        <option value='' selected disabled hidden> --เลือกหน่วยงาน-- </option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="depart1" style="display: none;">
+                    <label for="department1" class="form-label">ส่วนงาน</label>
+                    <select class="form-select" id="department1">
+                        <option value='' selected disabled hidden> --เลือกส่วนงาน-- </option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="depart2" style="display: none;">
+                    <label for="department2" class="form-label">ส่วนงาน</label>
+                    <select class="form-select" id="department2">
+                        <option value="" selected disabled hidden> --เลือกส่วนงาน-- </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="commodity" class="form-label">หมายเลขครุภัณฑ์</label>
+                    <input type="text" class="form-control" id="commodity" placeholder="ตัวอย่าง....7440-001-0058"
+                        value="" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="request" class="form-label">อาการปัญหาที่เกิด</label>
+                    <textarea class="form-control" id="request" rows="10" placeholder="เรื่อง...."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="contactNumber" class="form-label">เบอร์ติดต่อกลับ</label>
+                    <input type="text" class="form-control" id="contactNumber" placeholder="เบอร์...." value="" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="place" class="form-label">สถานที่ต้องการให้แก้ไข</label>
+                    <select class="form-select" id="place" onchange="checkPlace(this.value)">
+                        <option value="" selected disabled hidden> --เลือกสถานที่-- </option>
+                        <option value="รีโมท">รีโมท</option>
+                        <option value="ลงพื้นที่">ลงพื้นที่</option>
+                        <option value="ยกเครื่องมาที่ภาค">ยกเครื่องมาที่ภาค</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="anydeskdiv" style="display: none;">
+                    <label for="anydeskId" class="form-label">เบอร์ติดต่อกลับ</label>
+                    <input type="text" class="form-control" id="anydeskId" placeholder="หมายเลข...." value="" />
+                </div>
+
+                <div class="mb-3">
+                    <a type="button" class="btn btn-success form-control" onclick="saverequest()">Success</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- loadingModal -->
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <!-- <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="loadingModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div> -->
+                <div class="modal-body">
+                    <div class="ratio ratio-1x1" style="width: 100%;">
+                        <div class="spinner-border text-info" style="width: 100%; height: 100%;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h2 class="text-center text-info blink-text">Loading.....</h2>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>
+    <script>
+        var userId = "A001";
+        var displayName = "anonymous";
+        var pictureUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/250px-Anonymous_emblem.svg.png";
+        var apiURL = "https://script.google.com/macros/s/AKfycbxCbacj4JW8lZKiaMHWaJK-n_LdU7XaojlOH5PQcgOpYg3HhD5PtzTE8pHRrTOUQvZT/exec";
+        var liffgeted = false;
+        var dataseted = false;
+        var loadingModal = new bootstrap.Modal('#loadingModal', {});
+
+        function checkprompt() {
+            if (liffgeted && dataseted) loadingModal.hide();
+            else setTimeout(checkprompt, 500);
         }
-    }, err => console.error(err.code, error.message));
 
-</script>
+        function checkOffice(v) {
+            if (v == '') {
+                document.getElementById('depart1').style.display = "none";
+                document.getElementById('depart2').style.display = "none";
+            } else if (v == 'สำนักงานสรรพสามิตภาคที่ 2') {
+                document.getElementById('depart1').style.display = "block";
+                document.getElementById('depart2').style.display = "none";
+            } else {
+                document.getElementById('depart1').style.display = "none";
+                document.getElementById('depart2').style.display = "block";
+            }
+        }
+
+        function checkPlace(v) {
+            if (v == 'รีโมท') {
+                document.getElementById('anydeskdiv').style.display = "block";
+            } else {
+                document.getElementById('anydeskdiv').style.display = "none";
+            }
+        }
+
+        function initform() {
+            document.getElementById('userName').value = "";
+            document.getElementById('position').value = "";
+            document.getElementById('office').value = "";
+            document.getElementById('department1').value = "";
+            document.getElementById('department2').value = "";
+            document.getElementById('commodity').value = "";
+            document.getElementById('request').value = "";
+            document.getElementById('contactNumber').value = "";
+            document.getElementById('place').value = "";
+            document.getElementById('anydeskId').value = "";
+            document.getElementById('depart1').style.display = "none";
+            document.getElementById('depart2').style.display = "none";
+            document.getElementById('anydeskdiv').style.display = "none";
+
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function saverequest() {
+            let userName = document.getElementById('userName').value;
+            let position = document.getElementById('position').value;
+            let office = document.getElementById('office').value;
+            let department1 = document.getElementById('department1').value;
+            let department2 = document.getElementById('department2').value;
+            let commodity = document.getElementById('commodity').value;
+            let request = document.getElementById('request').value;
+            let contactNumber = document.getElementById('contactNumber').value;
+            let place = document.getElementById('place').value;
+            let anydeskId = document.getElementById('anydeskId').value;
+
+            let raw = {
+                "userId": userId,
+                "displayName": displayName,
+                "pictureUrl": pictureUrl,
+                "userName": userName,
+                "position": position,
+                "office": office,
+                "department1": department1,
+                "department2": department2,
+                "commodity": commodity,
+                "request": request,
+                "contactNumber": contactNumber,
+                "place": place,
+                "anydeskId": anydeskId
+            };
+
+            let options = {
+                method: "POST",
+                redirect: "follow",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(raw)
+            };
+
+            if (userName == "" || position == "" || office == "" || (department1 == "" && department2 == "") || request == "" || contactNumber == "" || place == "") {
+                Swal.fire({
+                    title: "Warning",
+                    text: "กรุณากรอกข้อมูลให้ครบถ้วน",
+                    icon: "warning"
+                }).then(() => {
+                    window.scrollTo({
+                        top: 50,
+                        left: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            } else {
+                loadingModal.show();
+
+                fetch(apiURL + '?fn=request', options)
+                    .then((response) => response.json())
+                    .then((result) => {
+                        if (result.res) {
+                            Swal.fire({
+                                title: "Success",
+                                text: "ดำเนินการเสร็จสิ้น ส่วนเทคโนโลยีสารสนเทศจะรีบดำเนินการแก้ไขให้ครับ",
+                                icon: "success"
+                            }).then(() => {
+                                initform();
+                                loadingModal.hide();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: "Error",
+                                text: "ดำเนินการผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                                icon: "error"
+                            }).then(() => {
+                                loadingModal.hide();
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            title: "Error",
+                            text: "ดำเนินการผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                            icon: "error"
+                        }).then(() => {
+                            loadingModal.hide();
+                        });
+                        console.log(error);
+                    });
+            }
+        }
+
+        function liffconnect() {
+            liff.init({ liffId: "1660727236-AbmnnyqB" }, () => {
+                if (liff.isLoggedIn()) {
+                    liff.getProfile().then(profile => {
+                        userId = profile.userId;
+                        displayName = profile.displayName;
+                        pictureUrl = profile.pictureUrl;
+                        liffgeted = true;
+                    }).catch(err => {
+                        Swal.fire({
+                            title: "Error",
+                            text: "การการเชื่อมต่อข้อมูลผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                            icon: "error"
+                        }).then(() => {
+                            liffconnect();
+                        });
+                        console.error(err);
+                    });
+                } else {
+                    liff.login();
+                }
+            }, err => {
+                Swal.fire({
+                    title: "Error",
+                    text: "การการเชื่อมต่อข้อมูลผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                    icon: "error"
+                }).then(() => {
+                    liffconnect();
+                });
+                console.error(err.code, error.message);
+            });
+        }
+
+        function getdatas() {
+            initform();
+
+            let raw = {
+                "fn": "getdata"
+            };
+
+            let options = {
+                method: "POST",
+                redirect: "follow",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(raw)
+            };
+
+            fetch(apiURL, options)
+                .then((response) => response.json())
+                .then((result) => {
+
+                    // let arrpost = result.positions;
+                    // let arroffc = result.offices;
+                    // let arrdeat1 = result.departments1;
+                    // let arrdept2 = result.departments2;
+
+                    result.positions.forEach(item => {
+                        document.getElementById('position').innerHTML += "<option value='" + item + "'>" + item + "</option>"
+                    });
+
+                    result.offices.forEach(item => {
+                        document.getElementById('office').innerHTML += "<option value='" + item + "'>" + item + "</option>"
+                    });
+
+                    result.departments1.forEach(item => {
+                        document.getElementById('department1').innerHTML += "<option value='" + item + "'>" + item + "</option>"
+                    });
+
+                    result.departments2.forEach(item => {
+                        document.getElementById('department2').innerHTML += "<option value='" + item + "'>" + item + "</option>"
+                    });
+
+                    dataseted = true;
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: "Error",
+                        text: "การการเชื่อมต่อข้อมูลผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                        icon: "error"
+                    }).then(() => {
+                        getdatas();
+                    });
+                    console.log(error);
+                });
+        }
+
+        loadingModal.show();
+        checkprompt();
+        liffconnect();
+        getdatas();
+    </script>
+</body>
 
 </html>
