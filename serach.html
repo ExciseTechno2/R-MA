@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-MA</title>
+
+    <!-- bootstrap -->
+    <link href="./vender/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="./vender/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Sweetalert -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.all.min.js"></script>
+
+    <style>
+        /* html,
+        body {
+            background-image: linear-gradient(rgb(0, 132, 255), rgb(126, 161, 201), rgb(174, 174, 175));
+            background-repeat: no-repeat;
+        } */
+
+        .blink-text {
+            animation: blinker 1s linear infinite;
+            /* ปรับความเร็ว 1s (1 วินาที), linear (ความเร็วคงที่), infinite (กระพริบไม่รู้จบ) */
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+                /* ช่วงกลางของเวลา ข้อความจะหายไป (0%) */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid"
+        style="height: 100%; width: 100%; position: fixed; top: 0;  left: 0; background-image: linear-gradient(rgb(0, 132, 255), rgb(126, 161, 201), rgb(174, 174, 175));">
+        <div class="card my-2">
+            <div class="card-body g-3 bg-light">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="id" placeholder="กรอกเลขที่แจ้งซ่อม....." value="" />
+                    <a class="btn btn-outline-secondary" type="button" onclick="getrequest()">ค้นหา</a>
+                </div>
+                <hr />
+                <div>
+                    <table class="table table-striped">
+                        <tbody id="res">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loadingModal -->
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <!-- <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="loadingModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div> -->
+                <div class="modal-body">
+                    <div class="ratio ratio-1x1" style="width: 100%;">
+                        <div class="spinner-border text-info" style="width: 100%; height: 100%;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h2 class="text-center text-info blink-text">Loading.....</h2>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var apiURL = "https://script.google.com/macros/s/AKfycbxCbacj4JW8lZKiaMHWaJK-n_LdU7XaojlOH5PQcgOpYg3HhD5PtzTE8pHRrTOUQvZT/exec";
+        var loadingModal = new bootstrap.Modal('#loadingModal', {});
+
+        function getrequest() {
+
+            let id = document.getElementById('id').value;
+            console.log(id);
+
+            let raw = {
+                "id": id
+            };
+
+            let options = {
+                method: "POST",
+                redirect: "follow",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(raw)
+            };
+
+            if (id == "") {
+                Swal.fire({
+                    title: "Warning",
+                    text: "กรุณากรอกข้อมูลให้ครบถ้วน",
+                    icon: "warning"
+                }).then(() => {
+                    window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            } else {
+                loadingModal.show();
+
+                fetch(apiURL + '?fn=getrequest', options)
+                    .then((response) => response.json())
+                    .then((result) => {
+                        let res = "";
+                        result.forEach(item => {
+                            res += "<tr><th style='width: 120px;'>เลขที่</th><td style='white-space: pre-wrap;'>" + item.id + "</td></tr>\n";
+                            res += "<tr><th>ผู้แจ้ง</th><td style='white-space: pre-wrap;'>" + item.userName + "</td></tr>\n";
+                            res += "<tr><th>ตำแหน่ง</th><td style='white-space: pre-wrap;'>" + item.position + "</td></tr>\n";
+                            res += "<tr><th>สังกัด</th><td style='white-space: pre-wrap;'>" + item.office + "</td></tr>\n";
+                            res += "<tr><th>รายการ</th><td style='white-space: pre-wrap;'>" + item.request + "</td></tr>\n";
+                            res += "<tr><th>เลขครุภัณฑ์</th><td style='white-space: pre-wrap;'>" + item.commodity + "</td></tr>\n";
+                            res += "<tr><th>เบอร์โทร</th><td style='white-space: pre-wrap;'>" + item.contactNumber + "</td></tr>\n";
+                            res += "<tr><th>การแก้ไข</th><td style='white-space: pre-wrap;'>" + item.place + "</td></tr>\n";
+                            res += "<tr><th>สถานะ</th><td style='white-space: pre-wrap;'>" + item.status + "</td></tr>\n";
+                        });
+                        document.getElementById('res').innerHTML = res;
+                        loadingModal.hide();
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            title: "Error",
+                            text: "ดำเนินการผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                            icon: "error"
+                        }).then(() => {
+                            loadingModal.hide();
+                        });
+                        console.log(error);
+                    });
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
