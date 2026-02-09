@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-MA</title>
+
+    <!-- bootstrap -->
+    <link href="./vender/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="./vender/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Sweetalert -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.all.min.js"></script>
+
+    <style>
+        /* html,
+        body {
+            background-image: linear-gradient(rgb(0, 132, 255), rgb(126, 161, 201), rgb(174, 174, 175));
+            background-repeat: no-repeat;
+        } */
+
+        .blink-text {
+            animation: blinker 1s linear infinite;
+            /* ปรับความเร็ว 1s (1 วินาที), linear (ความเร็วคงที่), infinite (กระพริบไม่รู้จบ) */
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+                /* ช่วงกลางของเวลา ข้อความจะหายไป (0%) */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid"
+        style="height: 100%; width: 100%; position: fixed; top: 0;  left: 0; background-image: linear-gradient(rgb(0, 132, 255), rgb(126, 161, 201), rgb(174, 174, 175));">
+        <div class="card my-2">
+            <div class="card-body g-3 bg-light">
+                <h1 class="d-flex justify-content-center text-primary">ให้คะแนนความพึงพอใจ</h1>
+
+                <div class="d-flex justify-content-around">
+                    <button class="btn btn-outline-secondary" onclick="selectrate(5)"><span
+                            style="font-size: x-large;">🤩</span><br />มากที่สุด</button>
+                    <button class="btn btn-outline-secondary" onclick="selectrate(4)"><span
+                            style="font-size: x-large;">🙂</span><br />มาก</button>
+                    <button class="btn btn-outline-secondary" onclick="selectrate(3)"><span
+                            style="font-size: x-large;">😐</span><br />ปานกลาง</button>
+                    <button class="btn btn-outline-secondary" onclick="selectrate(2)"><span
+                            style="font-size: x-large;">😕</span><br />น้อย</button>
+                    <button class="btn btn-outline-secondary" onclick="selectrate(1)"><span
+                            style="font-size: x-large;">😫</span><br />น้อยที่สุด</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- loadingModal -->
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <!-- <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="loadingModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div> -->
+                <div class="modal-body">
+                    <div class="ratio ratio-1x1" style="width: 100%;">
+                        <div class="spinner-border text-info" style="width: 100%; height: 100%;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h2 class="text-center text-info blink-text">Loading.....</h2>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var apiURL = "https://script.google.com/macros/s/AKfycbxCbacj4JW8lZKiaMHWaJK-n_LdU7XaojlOH5PQcgOpYg3HhD5PtzTE8pHRrTOUQvZT/exec";
+        var loadingModal = new bootstrap.Modal('#loadingModal', {});
+
+        function saverate(v) {
+            loadingModal.show();
+
+            let raw = {
+                "rate": v
+            };
+
+            let options = {
+                method: "POST",
+                redirect: "follow",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(raw)
+            };
+
+            fetch(apiURL + '?fn=saverate', options)
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result.res) {
+                        Swal.fire({
+                            title: "Success",
+                            text: "ดำเนินการเสร็จสิ้น",
+                            icon: "success"
+                        }).then(() => {
+                            loadingModal.hide();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: "ดำเนินการผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                            icon: "error"
+                        }).then(() => {
+                            loadingModal.hide();
+                        });
+                    }
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: "Error",
+                        text: "ดำเนินการผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                        icon: "error"
+                    }).then(() => {
+                        loadingModal.hide();
+                    });
+                    console.log(error);
+                });
+        }
+
+        function selectrate(v) {
+            Swal.fire({
+                title: "ยืนยันการให้คะแนน ?",
+                text: "",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "OK"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    saverate(v);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
